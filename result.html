@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Results - MCQ Generator</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            padding: 20px;
+            text-align: center;
+        }
+        .question-item {
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .badge-category {
+            background-color: #6c757d;
+        }
+        .badge-easy { background-color: #28a745; }
+        .badge-medium { background-color: #ffc107; color: black; }
+        .badge-hard { background-color: #dc3545; }
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .btn-action {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">📊 Detailed Analytics</h1>
+        
+        <!-- Session Information -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5>📋 Session Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Source:</strong> {{ input_source }}</p>
+                <p><strong>Text Preview:</strong> {{ input_text }}</p>
+                <p><strong>Questions Generated:</strong> {{ mcqs|length }}</p>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <h3>{{ mcqs|length }}</h3>
+                    <p>Questions</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="background:linear-gradient(135deg, #f093fb, #f5576c)">
+                    <h3>{{ analytics.avg_score }}%</h3>
+                    <p>Avg Score</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="background:linear-gradient(135deg, #4facfe, #00f2fe)">
+                    <h3>
+                        {% set categories = [] %}
+                        {% for mcq in mcqs %}
+                            {% if mcq.category not in categories %}
+                                {% set categories = categories.append(mcq.category) %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ categories|length }}
+                    </h3>
+                    <p>Categories</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card" style="background:linear-gradient(135deg, #43e97b, #38f9d7)">
+                    <h3>
+                        {% set easy_count = 0 %}
+                        {% for mcq in mcqs %}
+                            {% if mcq.difficulty == 'Easy' %}
+                                {% set easy_count = easy_count + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ easy_count }}
+                    </h3>
+                    <p>Easy Questions</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5>Categories Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5>Difficulty Levels</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="difficultyChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions List -->
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5>All Generated Questions ({{ mcqs|length }})</h5>
+            </div>
+            <div class="card-body">
+                {% for mcq in mcqs %}
+                <div class="question-item">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0">Q{{ loop.index }}: {{ mcq.question }}</h6>
+                        <div>
+                            <span class="badge badge-category">{{ mcq.category }}</span>
+                            <span class="badge badge-{{ mcq.difficulty|lower }}">{{ mcq.difficulty }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="options">
+                        {% for option, text in mcq.options.items() %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" disabled 
+                                   {% if option == mcq.correct_answer %}checked{% endif %}>
+                            <label class="form-check-label {% if option == mcq.correct_answer %}text-success font-weight-bold{% endif %}">
+                                <strong>{{ option }}.</strong> {{ text }}
+                                {% if option == mcq.correct_answer %}
+                                <span class="badge badge-success ml-2">Correct</span>
+                                {% endif %}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="explanation mt-2">
+                        <small class="text-muted"><strong>Explanation:</strong> {{ mcq.explanation }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/" class="btn btn-primary btn-action">🏠 Home</a>
+            <a href="/test_mode" class="btn btn-warning btn-action">📝 Take Test</a>
+            <a href="/download_pdf" class="btn btn-success btn-action">📄 Download PDF</a>
+            <a href="/analytics" class="btn btn-info btn-action">📈 More Analytics</a>
+            <a href="/export_json" class="btn btn-secondary btn-action">💾 Export JSON</a>
+        </div>
+    </div>
+
+    <script>
+    // Count everything from the page elements (no server data needed)
+    const categoryData = {};
+    const difficultyData = {};
+    let easyCount = 0;
+    const categoriesSet = new Set();
+
+    // Get all elements and count
+    const categoryElements = document.querySelectorAll('.badge-category');
+    const difficultyElements = document.querySelectorAll('.badge-easy, .badge-medium, .badge-hard');
+
+    // Count categories
+    categoryElements.forEach(element => {
+        const category = element.textContent.trim();
+        categoriesSet.add(category);
+        categoryData[category] = (categoryData[category] || 0) + 1;
+    });
+
+    // Count difficulties
+    difficultyElements.forEach(element => {
+        const difficulty = element.textContent.trim();
+        difficultyData[difficulty] = (difficultyData[difficulty] || 0) + 1;
+        
+        if (difficulty === 'Easy') {
+            easyCount++;
+        }
+    });
+
+    // Update the counters
+    document.getElementById('categories-count').textContent = categoriesSet.size;
+    document.getElementById('easy-count').textContent = easyCount;
+
+    console.log('Category Data:', categoryData);
+    console.log('Difficulty Data:', difficultyData);
+
+    // Create charts
+    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(categoryCtx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(categoryData),
+            datasets: [{
+                data: Object.values(categoryData),
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    const difficultyCtx = document.getElementById('difficultyChart').getContext('2d');
+    const difficultyChart = new Chart(difficultyCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(difficultyData),
+            datasets: [{
+                label: 'Number of Questions',
+                data: Object.values(difficultyData),
+                backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

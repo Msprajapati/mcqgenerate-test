@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generated MCQs</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px 0;
+        }
+        .container {
+            max-width: 900px;
+        }
+        .mcq-card {
+            margin-bottom: 25px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 4px solid #007bff;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .correct-answer {
+            display: none;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .option-label {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+        }
+        .option-label:hover {
+            background-color: #e9ecef;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .btn-action {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h1 class="text-primary">📝 Generated MCQs</h1>
+            <p class="lead">Review your questions below</p>
+        </div>
+
+        <!-- Source Info -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>📋 Session Information</h5>
+                <p><strong>Source:</strong> {{ input_source }}</p>
+                <p><strong>Preview:</strong> {{ input_text }}</p>
+                <p><strong>Total Questions:</strong> {{ num_generated }}</p>
+            </div>
+        </div>
+
+        <!-- MCQs -->
+        <div id="mcqs-container">
+            {% for mcq in mcqs %}
+            <div class="card mcq-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Q{{ loop.index }}</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">{{ mcq.question }}</h6>
+                    
+                    <div class="options">
+                        {% for option, text in mcq.options.items() %}
+                        <div class="option-label">
+                            <strong>{{ option }}.</strong> {{ text }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="correct-answer" id="answer-{{ loop.index }}">
+                        <strong>✅ Correct Answer: {{ mcq.correct_answer }}</strong>
+                        <br>
+                        <small class="text-muted"><strong>Explanation:</strong> {{ mcq.explanation }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button id="show-answers" class="btn btn-primary btn-action">Show Answers</button>
+            <form action="/test_mode" method="GET" style="display: inline;">
+                <button type="submit" class="btn btn-warning btn-action">📝 Take Test</button>
+            </form>
+            <a href="/result" class="btn btn-info btn-action">📊 View Analytics</a>
+            <a href="/download_pdf" class="btn btn-success btn-action" id="download-btn" style="display:none;">📄 Download PDF</a>
+            <a href="/export_json" class="btn btn-secondary btn-action">💾 Export JSON</a>
+            <a href="/" class="btn btn-outline-primary btn-action">🔄 Generate More</a>
+        </div>
+            
+    </div>
+
+    <script>
+        document.getElementById('show-answers').addEventListener('click', function() {
+            // Show all answers
+            const answers = document.querySelectorAll('.correct-answer');
+            answers.forEach(answer => {
+                answer.style.display = 'block';
+            });
+            
+            // Show download button
+            document.getElementById('download-btn').style.display = 'inline-block';
+            
+            // Update button
+            this.textContent = 'Answers Revealed';
+            this.classList.remove('btn-primary');
+            this.classList.add('btn-success');
+            this.disabled = true;
+        });
+    </script>
+</body>
+</html>

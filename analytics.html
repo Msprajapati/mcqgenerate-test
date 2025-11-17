@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .btn-action {
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">📈 Advanced Analytics</h1>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-body text-center">
+                        <h5>Total Questions</h5>
+                        <h2>{{ analytics.total_questions }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-body text-center">
+                        <h5>Average Score</h5>
+                        <h2>{{ analytics.avg_score }}%</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body text-center">
+                        <h5>Categories</h5>
+                        <h2>{{ analytics.categories|length }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5>Performance Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Categories:</h6>
+                        <ul class="list-group">
+                            {% for category, count in analytics.categories.items() %}
+                            <li class="list-group-item d-flex justify-content-between">
+                                {{ category }}
+                                <span class="badge bg-primary">{{ count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Difficulty:</h6>
+                        <ul class="list-group">
+                            {% for difficulty, count in analytics.difficulties.items() %}
+                            <li class="list-group-item d-flex justify-content-between">
+                                {{ difficulty }}
+                                <span class="badge bg-{% if difficulty == 'Easy' %}success{% elif difficulty == 'Medium' %}warning{% else %}danger{% endif %}">{{ count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="/" class="btn btn-primary btn-action">🏠 Home</a>
+            <a href="/test_mode" class="btn btn-warning btn-action">📝 Take Test</a>
+            <a href="/result" class="btn btn-info btn-action">📊 Session Results</a>
+            <a href="/download_pdf" class="btn btn-success btn-action">📄 Download PDF</a>
+        </div>
+    </div>
+</body>
+</html>

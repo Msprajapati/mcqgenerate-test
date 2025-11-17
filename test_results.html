@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Results - MCQ Generator</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .result-card {
+            border-left: 4px solid;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .correct {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        .incorrect {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .score-display {
+            font-size: 3em;
+            font-weight: bold;
+        }
+        .percentage-excellent { color: #28a745; }
+        .percentage-good { color: #ffc107; }
+        .percentage-poor { color: #dc3545; }
+        .option-correct {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 2px 0;
+        }
+        .option-incorrect {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Score Summary -->
+        <div class="card text-center mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3>📊 Test Results</h3>
+            </div>
+            <div class="card-body">
+                <div class="score-display {% if results.percentage >= 80 %}percentage-excellent{% elif results.percentage >= 60 %}percentage-good{% else %}percentage-poor{% endif %}">
+                    {{ results.score }}/{{ results.total }}
+                </div>
+                <h4 class="{% if results.percentage >= 80 %}text-success{% elif results.percentage >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                    {{ "%.1f"|format(results.percentage) }}%
+                </h4>
+                
+                {% if results.percentage >= 80 %}
+                <div class="alert alert-success mt-3">
+                    <h5>🎉 Outstanding Performance!</h5>
+                    <p>Excellent work! You have a strong understanding of the material.</p>
+                </div>
+                {% elif results.percentage >= 60 %}
+                <div class="alert alert-warning mt-3">
+                    <h5>👍 Good Job!</h5>
+                    <p>Solid performance. With a bit more practice, you'll excel!</p>
+                </div>
+                {% else %}
+                <div class="alert alert-danger mt-3">
+                    <h5>📚 Keep Practicing!</h5>
+                    <p>Review the material and try again. Every attempt helps you learn!</p>
+                </div>
+                {% endif %}
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Correct Answers</h6>
+                                <h4 class="text-success">{{ results.score }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Incorrect Answers</h6>
+                                <h4 class="text-danger">{{ results.total - results.score }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Results -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5>Detailed Question Analysis</h5>
+            </div>
+            <div class="card-body">
+                {% for result in results.results %}
+                <div class="result-card {% if result.is_correct %}correct{% else %}incorrect{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0">Q{{ result.question_number }}: {{ result.question }}</h6>
+                        <span class="badge {% if result.is_correct %}bg-success{% else %}bg-danger{% endif %}">
+                            {% if result.is_correct %}✓ Correct{% else %}✗ Incorrect{% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="options mb-2">
+                        <p><strong>Your Answer:</strong> 
+                            <span class="{% if result.is_correct %}text-success{% else %}text-danger{% endif %}">
+                                {{ result.user_answer if result.user_answer else 'Not answered' }}
+                            </span>
+                        </p>
+                        <p><strong>Correct Answer:</strong> 
+                            <span class="text-success">{{ result.correct_answer }}</span>
+                        </p>
+                        
+                        <div class="mt-2">
+                            <strong>All Options:</strong>
+                            {% for option, text in result.options.items() %}
+                            <div class="{% if option == result.correct_answer %}option-correct{% elif option == result.user_answer and not result.is_correct %}option-incorrect{% else %}{% endif %}">
+                                <strong>{{ option }}.</strong> {{ text }}
+                                {% if option == result.correct_answer %}
+                                <small class="text-success"> ✓ Correct</small>
+                                {% elif option == result.user_answer and not result.is_correct %}
+                                <small class="text-danger"> ✗ Your choice</small>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="explanation">
+                        <p class="mb-1"><strong>Explanation:</strong></p>
+                        <p class="text-muted mb-0">{{ result.explanation }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary">🏠 Home</a>
+            <a href="/test_mode" class="btn btn-warning">🔄 Retry Test</a>
+            <a href="/result" class="btn btn-info">📈 View Analytics</a>
+            <a href="/download_pdf" class="btn btn-success">📄 Download PDF</a>
+        </div>
+    </div>
+</body>
+</html>
